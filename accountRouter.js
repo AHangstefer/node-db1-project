@@ -31,13 +31,12 @@ router.get("/:id", async (req, res, next)=>{
 
 router.post("/", async (req, res, next)=> {
     try{
-        const newId = req.params.id
-        const newName = `account+${newId}`
+        
         const newAccount = {
-            name: newName,
+            name: req.body.name,
             budget: req.body.budget
         }
-        if(!newAccount.budget){
+        if(!newAccount.name || !newAccount.budget){
             return res.status(400).json({
                 message: "You need a budget"
             })
@@ -58,5 +57,52 @@ router.post("/", async (req, res, next)=> {
     }
     
 })
+
+router.put("/:id",async (req, res, next)=> {
+    try{
+
+        const changeToMake = {
+            name: req.body.name,
+            budget: req.body.budget
+        }
+        if(!changeToMake.name || !changeToMake.budget){
+            return res.status(404).json({
+                message: "Need a title and content"
+            })
+        }
+
+        await db("accounts")
+            .where("id", req.params.id)
+            .update(changeToMake)
+
+        const changedAccount = await db
+            .select("*")
+            .from("accounts")
+            .where("id", req.params.id)
+
+            res.json(changedAccount)
+
+
+
+    }
+    catch (err){
+        next(err)
+    }
+
+})
+
+router.delete("/:id", async (req, res, next)=>{
+    try{
+        await db("accounts")
+            .where("id", req.params.id)
+            .del()
+        res.status(204).end()
+    }
+    catch(err){
+        next(err)
+    }
+})
+
+
 
 module.exports = router;
